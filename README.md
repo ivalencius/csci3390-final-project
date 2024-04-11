@@ -1,17 +1,31 @@
 # Large Scale Data Processing: Final Project
+Authors:
+- Ilan Valencius (valencig)
+- Steven Roche (sroche14)
+- Jason Adhinarta (jasonkena)
+
 ## Graph matching
 For the final project, you are provided 6 CSV files, each containing an undirected graph, which can be found [here](https://drive.google.com/file/d/1khb-PXodUl82htpyWLMGGNrx-IzC55w8/view?usp=sharing). The files are as follows:  
 
-|           File name           |        Number of edges       |
-| ------------------------------| ---------------------------- |
-| com-orkut.ungraph.csv         | 117185083                    |
-| twitter_original_edges.csv    | 63555749                     |
-| soc-LiveJournal1.csv          | 42851237                     |
-| soc-pokec-relationships.csv   | 22301964                     |
-| musae_ENGB_edges.csv          | 35324                        |
-| log_normal_100.csv            | 2671                         |  
+|           File name           |        Number of edges       | Size of Matching [edges] |
+| :---------------------------: | :--------------------------: | :----------------------: |
+| com-orkut.ungraph.csv         | 117185083                    | :x: |
+| twitter_original_edges.csv    | 63555749                     | :x: |
+| soc-LiveJournal1.csv          | 42851237                     | :x: |
+| soc-pokec-relationships.csv   | 22301964                     | :x: |
+| musae_ENGB_edges.csv          | 35324                        | :x: |
+| log_normal_100.csv            | 2671                         | :x: |
 
 Your goal is to compute a matching as large as possible for each graph. 
+
+### Estimates of computation time
+TODO
+
+### Approach
+TODO
+
+### Advantages
+TODO
 
 ### Input format
 Each input file consists of multiple lines, where each line contains 2 numbers that denote an undirected edge. For example, the input below is a graph with 3 edges.  
@@ -23,20 +37,6 @@ Each input file consists of multiple lines, where each line contains 2 numbers t
 Your output should be a CSV file listing all of the matched edges, 1 on each line. For example, the ouput below is a 2-edge matching of the above input graph. Note that `3,4` and `4,3` are the same since the graph is undirected.  
 1,2  
 4,3  
-
-### No template is provided
-For the final project, you will need to write everything from scratch. Feel free to consult previous projects for ideas on structuring your code. That being said, you are provided a verifier that can confirm whether or not your output is a matching. As usual, you'll need to compile it with
-```
-sbt clean package
-```  
-The verifier accepts 2 file paths as arguments, the first being the path to the file containing the initial graph and the second being the path to the file containing the matching. It can be ran locally with the following command (keep in mind that your file paths may be different):
-```
-// Linux
-spark-submit --master local[*] --class final_project.verifier target/scala-2.12/project_3_2.12-1.0.jar /data/log_normal_100.csv data/log_normal_100_matching.csv
-
-// Unix
-spark-submit --master "local[*]" --class "final_project.verifier" target/scala-2.12/project_3_2.12-1.0.jar data/log_normal_100.csv data/log_normal_100_matching.csv
-```
 
 ## Deliverables
 * The output file (matching) for each test case.
@@ -66,9 +66,6 @@ spark-submit --master "local[*]" --class "final_project.verifier" target/scala-2
 * Presentation (15%)
 * Formatting (10%)
   * If the format of your submission does not adhere to the instructions (e.g. output file naming conventions), points will be deducted in this category.
-
-## Submission via GitHub
-Delete your project's current **README.md** file (the one you're reading right now) and include your report as a new **README.md** file in the project root directory. Have no fear—the README with the project description is always available for reading in the template repository you created your repository from. For more information on READMEs, feel free to visit [this page](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-readmes) in the GitHub Docs. You'll be writing in [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown). Be sure that your repository is up to date and you have pushed all of your project's code. When you're ready to submit, simply provide the link to your repository in the Canvas assignment's submission.
 
 ## You must do the following to receive full credit:
 1. Create your report in the ``README.md`` and push it to your repo.
