@@ -1,4 +1,5 @@
 # Ignore everything in this directory
-*
+*.csv
+!*.csv.gz
 # Except this file
 !.gitignore

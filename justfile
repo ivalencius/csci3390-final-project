@@ -7,6 +7,11 @@ build:
 set export
 LOCAL_DIRS := "."
 
+compress:
+    find ./exports/*.csv -exec gzip -kf {} \;
+    # Check that everything is small enough (<25 MB)
+    find ./exports/*.csv.gz -size +25M -exec ls -lhs {} \;
+
 log_normal_100:
     spark-submit --master local[*] --class final_project.maximal target/scala-2.12/final_project_2.12-1.0.jar data/log_normal_100.csv
     find ./exports/log_normal_100_output.csv/*.csv -exec mv {} ./exports/log_normal_100_matching.csv \;
