@@ -14,7 +14,11 @@ object verifier{
     val conf = new SparkConf().setAppName("verifier")
     val sc = new SparkContext(conf)
     val spark = SparkSession.builder.config(conf).getOrCreate()
-/* You can either use sc or spark */
+    println("=====================================")
+    println("Spark UI:")
+    println("\t"+sc.uiWebUrl.get)
+    println("=====================================")
+    /* You can either use sc or spark */
 
     if(args.length != 2) {
       println("Usage: verifier graph_path matching_path")
