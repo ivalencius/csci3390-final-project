@@ -10,12 +10,12 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.log4j.{Level, Logger}
 // main function
 object maximal{
-  val rootLogger = Logger.getRootLogger()
-  rootLogger.setLevel(Level.ERROR)
-  Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
-  Logger.getLogger("org.spark-project").setLevel(Level.WARN)
-  def maximalMatching(g: Graph[Int, Int]): Graph[Int, Int] = {
-    return g
+    val rootLogger = Logger.getRootLogger()
+    rootLogger.setLevel(Level.ERROR)
+    Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
+    Logger.getLogger("org.spark-project").setLevel(Level.WARN)
+    def maximalMatching(g: Graph[Int, Int]): Graph[Int, Int] = {
+        return g
     }   
 
     def main(args: Array[String]) {
@@ -38,7 +38,7 @@ object maximal{
     }
     val file = args(0)
     // Get file name for output
-    val saveName = "./exports/"+file.split("/").last.replace(".csv", "_matching.csv")
+    val saveName = "./exports/"+file.split("/").last.replace(".csv", "_output.csv")
       
     val edges = sc.textFile(file).map(line => {val x = line.split(","); Edge(x(0).toLong, x(1).toLong , 1)} )
     val g = Graph.fromEdges[Int, Int](edges, 0, edgeStorageLevel = StorageLevel.MEMORY_AND_DISK, vertexStorageLevel = StorageLevel.MEMORY_AND_DISK)
