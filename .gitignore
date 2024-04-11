@@ -1,0 +1,6 @@
+!.gitignore
+project/*
+target/*
+!target/scala-2.12
+target/scala-2.12/*
+!target/scala-2.12/final_project_2.12-1.0.jar
