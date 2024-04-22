@@ -4,6 +4,48 @@ Authors:
 - Steven Roche (sroche14)
 - Jason Adhinarta (jasonkena)
 
+__ADD DESCRIPTIVE TEXT ___
+
+---
+__Algorithm 1__:  Maximal Matching
+---
+
+__Input:__ A graph $G = (V, E)$ with maximum degree $\Delta$
+
+__Output:__ A matching $M$ in $G$
+
+__repeat__: Define $p:=\Delta^{-0.77}$ and $k := \Delta^{0.12}$
+  
+  1. Permutation: Choose a permutation $\pi$ uniformly at random over the edges in $E$.
+  2. Edge-sampling: Let $G^L=(V,L)$ be an edge-sampled subgraph of $G$ where each edge in $E$ is sampled independently with probability $p$.
+  3. Vertex partitioning: Choose a function $\chi: V \to [k]$ uniformly at random and form associated vertex partition $V_1,...,V_k$ where $V_i = {v: \chi(v) = i}$.
+  4. Each machine $i \in [k]$ recieved the graph $G^L[V_i]$ and finds the greedy maximal matching $M_i := \text{GreedyMM}(G^L[V_i], \pi)$.
+  5. Return matching $M := \cup^{k}_{i=1} M_i$.
+
+__until__ $\Delta=1$
+
+---
+__Algorithm 2__:  GreedyMM
+---
+
+__Input:__ A graph $G = (V, E)$ with ordering $\pi$
+
+__Output:__ A maximal matching $M$ in $G$
+
+Initialize an empty graph $M = \varnothing$.
+
+In each iteration let $E'$ denote the incident edges of an edge $e$.
+
+__for__: edge $e \in E$ (in $\pi$ order):
+
+  1. If $E' \notin M \to$ add $e$ to $M$
+
+__end__
+
+---
+Behnezhad, S., Hajiaghayi, M. T., & Harris, D. G. (2019, November). Exponentially faster massively parallel maximal matching. In 2019 IEEE 60th Annual Symposium on Foundations of Computer Science (FOCS) (pp. 1637-1649). IEEE. [[paper]](https://arxiv.org/pdf/1901.03744.pdf), [[YouTube description]](https://www.youtube.com/watch?v=axtF2JlRj6k)
+
+
 ## Graph matching
 For the final project, you are provided 6 CSV files, each containing an undirected graph, which can be found [here](https://drive.google.com/file/d/1khb-PXodUl82htpyWLMGGNrx-IzC55w8/view?usp=sharing). The files are as follows:  
 
