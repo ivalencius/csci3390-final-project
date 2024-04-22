@@ -19,7 +19,7 @@ __repeat__: Define $p:=\Delta^{-0.77}$ and $k := \Delta^{0.12}$
   1. Permutation: Choose a permutation $\pi$ uniformly at random over the edges in $E$.
   2. Edge-sampling: Let $G^L=(V,L)$ be an edge-sampled subgraph of $G$ where each edge in $E$ is sampled independently with probability $p$.
   3. Vertex partitioning: Choose a function $\chi: V \to [k]$ uniformly at random and form associated vertex partition $V_1,...,V_k$ where $V_i = {v: \chi(v) = i}$.
-  4. Each machine $i \in [k]$ recieved the graph $G^L[V_i]$ and finds the greedy maximal matching $M_i := \text{GreedyMM}(G^L[V_i], \pi)$.
+  4. Each machine $i \in [k]$ receives the graph $G^L[V_i]$ and finds the greedy maximal matching $M_i := \text{GreedyMM}(G^L[V_i], \pi)$.
   5. Return matching $M := \cup^{k}_{i=1} M_i$.
 
 __until__ $\Delta=1$
