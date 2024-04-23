@@ -61,9 +61,9 @@ object maximal{
       the same graph but with a flag on if the edge should be dropped or not
       */
       // Sort the order of the edges (pi)
-      // val sorted_edges = g.edges.sortBy(e => e.attr)                            // OVERFLOW ERROR HERE ?
+      val sorted_edges = g.edges.sortBy(e => e.attr)                            // OVERFLOW ERROR HERE ?
       // Overwrite the edge attribute with a flag (true if in matching, false otherwise)
-      var overwriten_attributes = g.edges.map({
+      var overwriten_attributes = sorted_edges.map({
         case Edge(src, dst, attr) => Edge(src, dst, false)
       })
       // #####################################################################
