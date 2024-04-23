@@ -35,14 +35,6 @@ object maximal{
       return sampled
     }
 
-    // class chiFunction(k: Int){
-    //   val r = new scala.util.Random
-
-    //   def hash(v: Int): Int = {
-    //     return r.nextInt(k)
-    //   }
-    // }
-
     def vertexPartition(g: Graph[Int, Double], k: Int): Graph[Int, Double] = {
       /*
       Store value of the partition in the vertex index
@@ -69,23 +61,23 @@ object maximal{
       the same graph but with a flag on if the edge should be dropped or not
       */
       // Sort the order of the edges (pi)
-      val sorted_edges = g.edges.sortBy(e => e.attr)
+      // val sorted_edges = g.edges.sortBy(e => e.attr)                            // OVERFLOW ERROR HERE ?
       // Overwrite the edge attribute with a flag (true if in matching, false otherwise)
-      var overwriten_attributes = sorted_edges.map({
+      var overwriten_attributes = g.edges.map({
         case Edge(src, dst, attr) => Edge(src, dst, false)
       })
       // #####################################################################
       // Up to here is working perfectly
       // #####################################################################
       // Now run greedy algorithm, if edge is in matching, set flag to true
-      for (edge <- overwriten_attributes.collect()) {
+      for (edge <- overwriten_attributes.collect) {
         val src = edge.srcId
         val dst = edge.dstId
         val attr = edge.attr
         if (attr == false) {
           if (!overwriten_attributes.filter(e => e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst).map(e => e.attr).reduce(_ || _)) {
             // Not matched and none of the neighbors are matched!
-            overwriten_attributes = overwriten_attributes.map(e => if (e.srcId == src && e.dstId == dst) Edge(src, dst, true) else e)
+            overwriten_attributes = overwriten_attributes.map(e => if ((e.srcId == src && e.dstId == dst) || (e.srcId == dst && e.dstId == src)) Edge(e.srcId, e.dstId, true) else e)
           }
         }
       }
@@ -109,20 +101,29 @@ object maximal{
     }
 
     def maximalMatching(g: Graph[Int, Int]): Graph[Int, Int] = {
-      var delta = 2 // random starting value
-      var matching = g.mapEdges(e => "unmatched")
+      var delta = 2 // random starting value to get into the loop
+      var matching = g.mapEdges(e => "untouched")//.mapVertices((id, attr) => (id, "untouched"))
       var rounds = 0
-      while(delta != 1){
-        val unmatched = matching.subgraph(epred = e => e.attr == "unmatched")
-        delta = maximumDegree(unmatched)
-        rounds += 1
-        println("\tDelta: " + delta) // random starting value
-        val p = math.pow(delta, -0.77)
-        val k = math.pow(delta, 0.12).ceil.toInt // Should we overestimate or underestimate k?
+      while(delta > 1){
+        println("Round: " + rounds)
         /*
         We get all the unmatched edges so we don't iterate over the same edges,
         and that way we don't need to worry about overwriting the matching graph.
         */
+        // #####################################################################
+        // ISSUE: subgraph doesn't filter out edges AND vertices
+        // #####################################################################
+        val untouched = matching.subgraph(epred = e => e.attr == "untouched")
+        // check that untouched has elements:
+        delta = maximumDegree(untouched)
+        println("\t# of untouched vertices: " + untouched.numVertices)
+        println("\t# of untouched edges: " + untouched.numEdges)
+        rounds += 1
+        println("\tDelta: " + delta)
+        val p = math.pow(delta, -0.77)
+        val k = math.pow(delta, 0.12).ceil.toInt // Should we overestimate or underestimate k?
+        println("\tP: " + p)
+        println("\tK: " + k)
         /*
         1. Permutation
         Rather than have a separate ordering, we add a random Double to each edge
@@ -132,7 +133,7 @@ object maximal{
         we won't have the same Double on the same partition in the same iteration)
         */
         
-        val pi = permute(unmatched) // working
+        val pi = permute(untouched) // working
         // 2. Edge-sampling
         val GL = edgeSample(pi, p) // working
         /*
@@ -140,22 +141,7 @@ object maximal{
         Similar approach to permutation. We don't need to generate a new graph,
         we can simply store the value of the partition in the vertex attribute.
         */
-        // val hashingFunction = new chiFunction(k)
         val partition = vertexPartition(GL, k)
-        // #####################################################################
-        // For testing (select first partition)
-        val sel = partition.subgraph(vpred = (id, attr) => attr == 0)
-        val greedy_edges = GreedyMM(sel) // Output has a true or false on whether it is in matching
-        for (edge <- greedy_edges.collect()) {
-          val src = edge.srcId
-          val dst = edge.dstId
-          val attr = edge.attr
-          if (attr == true) {
-            matching = matching.mapEdges(e => if ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst)) "matched" else e.attr)
-          }
-        }
-        // matching.subgraph(epred = e => e.attr == "matched").numEdges
-        // #####################################################################
         // 4. Run the greedy maximal matching algorithm on each partition
         val partitionedMatching = runPartitions(partition, GreedyMM)
         // 5. Combine the results of the partitions
@@ -166,18 +152,24 @@ object maximal{
           val dst = edge.dstId
           val attr = edge.attr
           if (attr == true) {
+            // Edge is in matching
             matching = matching.mapEdges(e => if ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst)) "matched" else e.attr)
+          } else if (attr == false) {
+            // Edge is not in matching, deactivate all other edges that share a vertex with this edge
+            matching = matching.mapEdges(e => if (e.attr == "untouched" && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
           }
         }
-        // 6. Update delta and remove all edges and nodes in the matching from the graph
+        // 6. Cache the matching graph for the next iteration
         matching.cache()
       }
       println("Rounds: " + rounds)
-      return matching.subgraph(epred = e => e.attr == "matched")
+      // Filter and drop attributes (coerce back to int to satisfy compiler)
+      val matched = matching.subgraph(epred = e => e.attr == "matched").mapEdges(e => 1)
+      println("Number of edges in maximal matching: " + matched.numEdges)
+      return matched
     }   
 
     def main(args: Array[String]) {
-
 
     val conf = new SparkConf().setAppName("maximal")
     val sc = new SparkContext(conf)
