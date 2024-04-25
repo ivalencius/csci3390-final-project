@@ -147,26 +147,29 @@ object maximal{
             Edge(srcId, dstId, newAttr)
         }
         matching = Graph(matching.vertices, mergedEdges)
-        // for (edge <- all_partitioned_edges.collect()) {
-        //   val src = edge.srcId
-        //   val dst = edge.dstId
-        //   val attr = edge.attr
-        //   if (attr == true) {
-        //     /*
-        //     Edge is in matching
-        //     Note: another edge may have already a vertex touching this edge so
-        //     we must ensure the edge has not been touched yet
-        //     !!!!!!!!!!!! THIS ISN'T WORKING PROPERLY !!!!!!!!!!!!!
-        //     Incident edges are being marked as matched even though only one can be matched
-        //     */
-        //     matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "matched" else e.attr)
-        //     // Deactivate the edges that are incident to the matched edge
-        //     matching = matching.mapEdges(e => if ((e.attr == "untouched") && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
-        //   } else if (attr == false) {
-        //     // Edge is not in matching
-        //     matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "unmatched" else e.attr)
-        //   }
-        // }
+
+        val marked_vertices = matching.aggregateMessages[Int](
+          triplet => {
+            // check edge attribute
+            if (triplet.attr == "matched") {
+              triplet.sendToDst(1)
+              triplet.sendToSrc(1)
+            } else {
+              // needed to include all vertices in graph
+              triplet.sendToDst(0)
+              triplet.sendToSrc(0)
+            }
+          },
+          (a, b) => a + b
+        )
+        matching = Graph(marked_vertices, matching.edges).mapTriplets[String]((triplet: EdgeTriplet[Int, String]) => {
+          if ((triplet.srcAttr + triplet.dstAttr) > 0 && triplet.attr == "untouched") {
+            "unmatched"
+          } else {
+            triplet.attr
+          }
+        })
+
         untouched = matching.subgraph(epred = e => e.attr == "untouched")
         // check that untouched has elements:
         delta = maximumDegree(untouched)
