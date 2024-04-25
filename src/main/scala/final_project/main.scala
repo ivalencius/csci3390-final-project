@@ -50,7 +50,7 @@ object maximal{
       val partitions = g.vertices.map(_._2).distinct.collect
       val partitionedMatching = partitions.map(p => {
         val partition = g.subgraph(vpred = (id, attr) => attr == p)
-        f(partition)
+        f(partition) // Ensure partition is stored all on one machine
       })
       return partitionedMatching
     }
@@ -119,7 +119,7 @@ object maximal{
         rounds += 1
         println("\tDelta: " + delta)
         val p = math.pow(delta, -0.77)
-        val k = math.pow(delta, 0.12).ceil.toInt // Should we overestimate or underestimate k?
+        val k = math.pow(delta, 0.12).floor.toInt // Should we overestimate or underestimate k?
         println("\tP: " + p)
         println("\tK: " + k)
         /*
@@ -139,10 +139,13 @@ object maximal{
         Similar approach to permutation. We don't need to generate a new graph,
         we can simply store the value of the partition in the vertex attribute.
         */
-        val partition = vertexPartition(GL, k)
+        var partition = vertexPartition(GL, k)
+        while (partition.numVertices == 0) {
+          partition = vertexPartition(GL, k)
+        }
         // 4. Run the greedy maximal matching algorithm on each partition
         val partitionedMatching = runPartitions(partition, GreedyMM)
-        // 5. Combine the results of the partitions (MAY HAVE DUPLICATE VERTICES)
+        // 5. Combine the results of the partitions
         val all_partitioned_edges = partitionedMatching.reduce(_ union _)
         // Update the matching
         for (edge <- all_partitioned_edges.collect()) {
@@ -169,6 +172,7 @@ object maximal{
         // check that untouched has elements:
         delta = maximumDegree(untouched)
         // 6. Cache the matching graph for the next iteration
+        untouched.cache()
         matching.cache()
       }
       println("Rounds: " + rounds)
