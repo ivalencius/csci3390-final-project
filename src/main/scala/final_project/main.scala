@@ -47,7 +47,7 @@ object maximal{
       return partitioned
     }
 
-    def runPartitions(g: Graph[Int, Double], f: (Graph[Int, Double], SparkContext) => RDD[Edge[Boolean]], sc: SparkContext): Array[RDD[Edge[Boolean]]] = {
+    def runPartitions(g: Graph[Int, Double], f: (Graph[Int, Double], SparkContext) => RDD[Edge[String]], sc: SparkContext): Array[RDD[Edge[String]]] = {
       /*
       Run the greedy maximal matching algorithm on each partition
       */
@@ -59,7 +59,7 @@ object maximal{
       return partitionedMatching
     }
 
-    def GreedyMM(g: Graph[Int, Double], sc: SparkContext): RDD[Edge[Boolean]] = {
+    def GreedyMM(g: Graph[Int, Double], sc: SparkContext): RDD[Edge[String]] = {
       /*
       We must have a way to merge the result of the partitions so just return
       the same graph but with a flag on if the edge should be dropped or not
@@ -86,7 +86,8 @@ object maximal{
         }
         index += 1
       }
-      return sc.parallelize(overwriten_attributes)
+      val coerce_to_string = overwriten_attributes.map(e => Edge(e.srcId, e.dstId, if (e.attr) "matched" else "unmatched"))
+      return sc.parallelize(coerce_to_string)
     }
 
     def maximalMatching(g: Graph[Int, Int], sc: SparkContext): Graph[Int, Int] = {
@@ -136,27 +137,33 @@ object maximal{
         val partitionedMatching = runPartitions(partition, GreedyMM, sc)
         // 5. Combine the results of the partitions
         val all_partitioned_edges = partitionedMatching.reduce(_ union _)
-        // Update the matching
-        for (edge <- all_partitioned_edges.collect()) {
-          val src = edge.srcId
-          val dst = edge.dstId
-          val attr = edge.attr
-          if (attr == true) {
-            /*
-            Edge is in matching
-            Note: another edge may have already a vertex touching this edge so
-            we must ensure the edge has not been touched yet
-            !!!!!!!!!!!! THIS ISN'T WORKING PROPERLY !!!!!!!!!!!!!
-            Incident edges are being marked as matched even though only one can be matched
-            */
-            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "matched" else e.attr)
-            // Deactivate the edges that are incident to the matched edge
-            matching = matching.mapEdges(e => if ((e.attr == "untouched") && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
-          } else if (attr == false) {
-            // Edge is not in matching
-            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "unmatched" else e.attr)
-          }
+        // Update the edges of the matching
+        val mergedEdges = matching.edges.fullOuterJoin(all_partitioned_edges).map {
+          case ((srcId, dstId), (originalAttrOpt, updatedAttrOpt)) =>
+            val newAttr = updatedAttrOpt.getOrElse("untouched") // Use updated attr or fall back to original
+            Edge(srcId, dstId, newAttr)
         }
+        matching = Graph(matching.vertices, mergedEdges)
+        // for (edge <- all_partitioned_edges.collect()) {
+        //   val src = edge.srcId
+        //   val dst = edge.dstId
+        //   val attr = edge.attr
+        //   if (attr == true) {
+        //     /*
+        //     Edge is in matching
+        //     Note: another edge may have already a vertex touching this edge so
+        //     we must ensure the edge has not been touched yet
+        //     !!!!!!!!!!!! THIS ISN'T WORKING PROPERLY !!!!!!!!!!!!!
+        //     Incident edges are being marked as matched even though only one can be matched
+        //     */
+        //     matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "matched" else e.attr)
+        //     // Deactivate the edges that are incident to the matched edge
+        //     matching = matching.mapEdges(e => if ((e.attr == "untouched") && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
+        //   } else if (attr == false) {
+        //     // Edge is not in matching
+        //     matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "unmatched" else e.attr)
+        //   }
+        // }
         untouched = matching.subgraph(epred = e => e.attr == "untouched")
         // check that untouched has elements:
         delta = maximumDegree(untouched)
