@@ -47,7 +47,7 @@ object maximal{
       return partitioned
     }
 
-    def runPartitions(g: Graph[Int, Double], f: Graph[Int, Double] => RDD[Edge[String]]): Array[RDD[Edge[String]]]= {
+    def runPartitions(g: Graph[Int, Double], f: Graph[Int, Double] => RDD[Edge[Boolean]]): Array[RDD[Edge[Boolean]]]= {
       /*
       Run the greedy maximal matching algorithm on each partition
       */
@@ -59,14 +59,7 @@ object maximal{
       return partitionedMatching
     }
 
-    def edgeRDDtoPairRDD(edgeRDD: RDD[Edge[String]]): RDD[((Long, Long), String)] = {
-      return edgeRDD.map(e => ((e.srcId, e.dstId), e.attr))
-    }
-    def pairRDDtoEdgeRDD(pairRDD: RDD[((Long, Long), String)]): RDD[Edge[String]] = {
-      return pairRDD.map(p => Edge(p._1._1, p._1._2, p._2))
-    }
-
-    def GreedyMM(g: Graph[Int, Double]): RDD[Edge[String]] = {
+    def GreedyMM(g: Graph[Int, Double]): RDD[Edge[Boolean]] = {
       /*
       We must have a way to merge the result of the partitions so just return
       the same graph but with a flag on if the edge should be dropped or not
@@ -75,7 +68,7 @@ object maximal{
       val sorted_edges = g.edges.sortBy(e => e.attr)                            // OVERFLOW ERROR HERE ?
       // Overwrite the edge attribute with a flag (true if in matching, false otherwise)
       var overwriten_attributes = sorted_edges.map({
-        case Edge(src, dst, attr) => Edge(src, dst, "unmatched")
+        case Edge(src, dst, attr) => Edge(src, dst, false)
       })
       // #####################################################################
       // Make this a concrete object and do an O(1) replace
@@ -85,10 +78,10 @@ object maximal{
         val src = edge.srcId
         val dst = edge.dstId
         val attr = edge.attr
-        if (attr == "unmatched") {
-          if (!overwriten_attributes.filter(e => e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst).map(e => e.attr == "matched").reduce(_ || _)) {
+        if (attr == false) {
+          if (!overwriten_attributes.filter(e => e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst).map(e => e.attr).reduce(_ || _)) {
             // Not matched and none of the neighbors are matched!
-            overwriten_attributes = overwriten_attributes.map(e => if ((e.srcId == src && e.dstId == dst) || (e.srcId == dst && e.dstId == src)) Edge(e.srcId, e.dstId, "matched") else e)
+            overwriten_attributes = overwriten_attributes.map(e => if ((e.srcId == src && e.dstId == dst) || (e.srcId == dst && e.dstId == src)) Edge(e.srcId, e.dstId, true) else e)
           }
         }
       }
@@ -157,41 +150,28 @@ object maximal{
         // 4. Run the greedy maximal matching algorithm on each partition
         val partitionedMatching = runPartitions(partition, GreedyMM)
         // 5. Combine the results of the partitions
-        // now a RDD[Edge[Boolean]]
         val all_partitioned_edges = partitionedMatching.reduce(_ union _)
-        val merged_edges = edgeRDDtoPairRDD(matching.edges).fullOuterJoin(edgeRDDtoPairRDD(all_partitioned_edges)).map({
-          case ((srcId, dstId), (original, modified)) => {
-            if (modified.isDefined) {
-              Edge(srcId, dstId, modified.get)
-            } else {
-              Edge(srcId, dstId, original.get)
-            }
+        // Update the matching
+        for (edge <- all_partitioned_edges.collect()) {
+          val src = edge.srcId
+          val dst = edge.dstId
+          val attr = edge.attr
+          if (attr == true) {
+            /*
+            Edge is in matching
+            Note: another edge may have already a vertex touching this edge so
+            we must ensure the edge has not been touched yet
+            !!!!!!!!!!!! THIS ISN'T WORKING PROPERLY !!!!!!!!!!!!!
+            Incident edges are being marked as matched even though only one can be matched
+            */
+            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst))) "matched" else e.attr)
+            // Deactivate the edges that are incident to the matched edge
+            matching = matching.mapEdges(e => if ((e.attr == "untouched") && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
+          } else if (attr == false) {
+            // Edge is not in matching
+            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst))) "unmatched" else e.attr)
           }
-        })
-        matching = Graph(matching.vertices, merged_edges)
-        
-        //
-        // // Update the matching
-        // for (edge <- all_partitioned_edges.collect()) {
-        //   val src = edge.srcId
-        //   val dst = edge.dstId
-        //   val attr = edge.attr
-        //   if (attr == true) {
-        //     /*
-        //     Edge is in matching
-        //     Note: another edge may have already a vertex touching this edge so
-        //     we must ensure the edge has not been touched yet
-        //     !!!!!!!!!!!! THIS ISN'T WORKING PROPERLY !!!!!!!!!!!!!
-        //     Incident edges are being marked as matched even though only one can be matched
-        //     */
-        //     matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst))) "matched" else e.attr)
-        //     // Deactivate the edges that are incident to the matched edge
-        //     matching = matching.mapEdges(e => if ((e.attr == "untouched") && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
-        //   } else if (attr == false) {
-        //     // Edge is not in matching
-        //     matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst))) "unmatched" else e.attr)
-        //   }
-        
+        }
         untouched = matching.subgraph(epred = e => e.attr == "untouched")
         // check that untouched has elements:
         delta = maximumDegree(untouched)
