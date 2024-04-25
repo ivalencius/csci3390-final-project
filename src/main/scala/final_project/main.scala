@@ -71,7 +71,7 @@ object maximal{
         case Edge(src, dst, attr) => Edge(src, dst, false)
       })
       // #####################################################################
-      // Up to here is working perfectly
+      // Make this a concrete object and do an O(1) replace
       // #####################################################################
       // Now run greedy algorithm, if edge is in matching, set flag to true
       for (edge <- overwriten_attributes.collect) {
