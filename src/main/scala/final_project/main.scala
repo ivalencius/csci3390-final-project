@@ -47,19 +47,19 @@ object maximal{
       return partitioned
     }
 
-    def runPartitions(g: Graph[Int, Double], f: Graph[Int, Double] => RDD[Edge[Boolean]]): Array[RDD[Edge[Boolean]]]= {
+    def runPartitions(g: Graph[Int, Double], f: (Graph[Int, Double], SparkContext) => RDD[Edge[String]], sc: SparkContext): Array[RDD[Edge[String]]] = {
       /*
       Run the greedy maximal matching algorithm on each partition
       */
       val partitions = g.vertices.map(_._2).distinct.collect
       val partitionedMatching = partitions.map(p => {
         val partition = g.subgraph(vpred = (id, attr) => attr == p)
-        f(partition) // Ensure partition is stored all on one machine
+        f(partition, sc) // Ensure partition is stored all on one machine
       })
       return partitionedMatching
     }
 
-    def GreedyMM(g: Graph[Int, Double]): RDD[Edge[Boolean]] = {
+    def GreedyMM(g: Graph[Int, Double], sc: SparkContext): RDD[Edge[String]] = {
       /*
       We must have a way to merge the result of the partitions so just return
       the same graph but with a flag on if the edge should be dropped or not
@@ -69,42 +69,28 @@ object maximal{
       // Overwrite the edge attribute with a flag (true if in matching, false otherwise)
       var overwriten_attributes = sorted_edges.map({
         case Edge(src, dst, attr) => Edge(src, dst, false)
-      })
+      }).collect() // Coerce to list
       // #####################################################################
       // Make this a concrete object and do an O(1) replace
       // #####################################################################
-      // Now run greedy algorithm, if edge is in matching, set flag to true
-      for (edge <- overwriten_attributes.collect) {
+      var index = 0
+      for (edge <- overwriten_attributes) {
         val src = edge.srcId
         val dst = edge.dstId
         val attr = edge.attr
         if (attr == false) {
           if (!overwriten_attributes.filter(e => e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst).map(e => e.attr).reduce(_ || _)) {
             // Not matched and none of the neighbors are matched!
-            overwriten_attributes = overwriten_attributes.map(e => if ((e.srcId == src && e.dstId == dst) || (e.srcId == dst && e.dstId == src)) Edge(e.srcId, e.dstId, true) else e)
+            overwriten_attributes = overwriten_attributes.updated(index, Edge(src, dst, true))
           }
         }
+        index += 1
       }
-      // THIS DOESN'T WORK BECAUSE WE NEED TO UPDATE THE GRAPH INSIDE MAP
-      // val matching = overwriten_attributes.map({
-      //   case Edge(src, dst, attr) => {
-      //     if (attr == true){
-      //       // Edge is already in matching
-      //       Edge(src, dst, true)
-      //     } else if (!overwriten_attributes.filter(e => e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst).map(e => e.attr).reduce(_ || _)) {
-      //       // Edge is not in matching neither are any of it's neighbors
-      //       Edge(src, dst, true)
-      //     } else { 
-      //       Edge(src, dst, false)
-      //     }
-      //     }
-      // })
-      // Get the vertices that are in the matching
-      // val in_matching = overwriten_attributes.filter(e => e.attr == true)
-      return overwriten_attributes
+      val coerce_to_string = overwriten_attributes.map(e => Edge(e.srcId, e.dstId, if (e.attr) "matched" else "unmatched"))
+      return sc.parallelize(coerce_to_string)
     }
 
-    def maximalMatching(g: Graph[Int, Int]): Graph[Int, Int] = {
+    def maximalMatching(g: Graph[Int, Int], sc: SparkContext): Graph[Int, Int] = {
       var matching = g.mapEdges(e => "untouched")//.mapVertices((id, attr) => (id, "untouched"))
       var rounds = 0
       var untouched = matching.subgraph(epred = e => e.attr == "untouched")
@@ -148,30 +134,39 @@ object maximal{
           partition = vertexPartition(GL, k)
         }
         // 4. Run the greedy maximal matching algorithm on each partition
-        val partitionedMatching = runPartitions(partition, GreedyMM)
+        val partitionedMatching = runPartitions(partition, GreedyMM, sc)
         // 5. Combine the results of the partitions
         val all_partitioned_edges = partitionedMatching.reduce(_ union _)
-        // Update the matching
-        for (edge <- all_partitioned_edges.collect()) {
-          val src = edge.srcId
-          val dst = edge.dstId
-          val attr = edge.attr
-          if (attr == true) {
-            /*
-            Edge is in matching
-            Note: another edge may have already a vertex touching this edge so
-            we must ensure the edge has not been touched yet
-            !!!!!!!!!!!! THIS ISN'T WORKING PROPERLY !!!!!!!!!!!!!
-            Incident edges are being marked as matched even though only one can be matched
-            */
-            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst))) "matched" else e.attr)
-            // Deactivate the edges that are incident to the matched edge
-            matching = matching.mapEdges(e => if ((e.attr == "untouched") && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
-          } else if (attr == false) {
-            // Edge is not in matching
-            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst))) "unmatched" else e.attr)
-          }
+        // Coerce to pair RDDs
+        val whole_graph = matching.edges.map(e => ((e.srcId, e.dstId), e.attr))
+        val partition_edges = all_partitioned_edges.map(e => ((e.srcId, e.dstId), e.attr))
+        // Update the edges of the matching
+        val mergedEdges = whole_graph.fullOuterJoin(partition_edges).map {
+          case ((srcId, dstId), (originalAttrOpt, updatedAttrOpt)) =>
+            val newAttr = updatedAttrOpt.getOrElse(originalAttrOpt.getOrElse("untouched"))
+            Edge(srcId, dstId, newAttr)
         }
+        matching = Graph(matching.vertices, mergedEdges)
+        // for (edge <- all_partitioned_edges.collect()) {
+        //   val src = edge.srcId
+        //   val dst = edge.dstId
+        //   val attr = edge.attr
+        //   if (attr == true) {
+        //     /*
+        //     Edge is in matching
+        //     Note: another edge may have already a vertex touching this edge so
+        //     we must ensure the edge has not been touched yet
+        //     !!!!!!!!!!!! THIS ISN'T WORKING PROPERLY !!!!!!!!!!!!!
+        //     Incident edges are being marked as matched even though only one can be matched
+        //     */
+        //     matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "matched" else e.attr)
+        //     // Deactivate the edges that are incident to the matched edge
+        //     matching = matching.mapEdges(e => if ((e.attr == "untouched") && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
+        //   } else if (attr == false) {
+        //     // Edge is not in matching
+        //     matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "unmatched" else e.attr)
+        //   }
+        // }
         untouched = matching.subgraph(epred = e => e.attr == "untouched")
         // check that untouched has elements:
         delta = maximumDegree(untouched)
@@ -212,7 +207,7 @@ object maximal{
     val g = Graph.fromEdges[Int, Int](edges, 0, edgeStorageLevel = StorageLevel.MEMORY_AND_DISK, vertexStorageLevel = StorageLevel.MEMORY_AND_DISK)
     println("Starting to find the maximal matching")
     val startTimeMillis = System.currentTimeMillis()
-    val g2 = maximalMatching(g)
+    val g2 = maximalMatching(g, sc)
 
     val endTimeMillis = System.currentTimeMillis()
     val durationSeconds = (endTimeMillis - startTimeMillis) / 1000
