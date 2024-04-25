@@ -2,6 +2,7 @@ package final_project
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
+import scala.util.control.Breaks._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
@@ -16,6 +17,9 @@ object maximal{
     Logger.getLogger("org.spark-project").setLevel(Level.WARN)
 
     def maximumDegree(g: Graph[Int, String]): Int = {
+      if (g.numEdges == 0) {
+        return 0
+      }
       return g.degrees.map(_._2).max
     }
 
@@ -180,7 +184,7 @@ object maximal{
       val matched = matching.subgraph(epred = e => e.attr == "matched").mapEdges(e => 1)
       println("Number of edges in maximal matching: " + matched.numEdges)
       return matched
-    }   
+    }
 
     def main(args: Array[String]) {
 
