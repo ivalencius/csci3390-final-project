@@ -149,12 +149,12 @@ object maximal{
             !!!!!!!!!!!! THIS ISN'T WORKING PROPERLY !!!!!!!!!!!!!
             Incident edges are being marked as matched even though only one can be matched
             */
-            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst))) "matched" else e.attr)
+            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "matched" else e.attr)
             // Deactivate the edges that are incident to the matched edge
             matching = matching.mapEdges(e => if ((e.attr == "untouched") && (e.srcId == src || e.dstId == src || e.srcId == dst || e.dstId == dst)) "unmatched" else e.attr)
           } else if (attr == false) {
             // Edge is not in matching
-            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst) || (e.dstId == src && e.srcId == dst))) "unmatched" else e.attr)
+            matching = matching.mapEdges(e => if (e.attr == "untouched" && ((e.srcId == src && e.dstId == dst))) "unmatched" else e.attr)
           }
         }
         untouched = matching.subgraph(epred = e => e.attr == "untouched")
