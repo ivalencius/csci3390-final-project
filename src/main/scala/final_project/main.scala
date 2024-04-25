@@ -137,10 +137,13 @@ object maximal{
         val partitionedMatching = runPartitions(partition, GreedyMM, sc)
         // 5. Combine the results of the partitions
         val all_partitioned_edges = partitionedMatching.reduce(_ union _)
+        // Coerce to pair RDDs
+        val whole_graph = matching.edges.map(e => ((e.srcId, e.dstId), e.attr))
+        val partition_edges = all_partitioned_edges.map(e => ((e.srcId, e.dstId), e.attr))
         // Update the edges of the matching
-        val mergedEdges = matching.edges.fullOuterJoin(all_partitioned_edges).map {
+        val mergedEdges = whole_graph.fullOuterJoin(partition_edges).map {
           case ((srcId, dstId), (originalAttrOpt, updatedAttrOpt)) =>
-            val newAttr = updatedAttrOpt.getOrElse("untouched") // Use updated attr or fall back to original
+            val newAttr = updatedAttrOpt.getOrElse(originalAttrOpt.getOrElse("untouched"))
             Edge(srcId, dstId, newAttr)
         }
         matching = Graph(matching.vertices, mergedEdges)
