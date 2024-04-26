@@ -94,6 +94,7 @@ object maximal{
       var matching = g.mapEdges(e => "untouched")//.mapVertices((id, attr) => (id, "untouched"))
       var rounds = 0
       var untouched = matching.subgraph(epred = e => e.attr == "untouched")
+      println("Total number of vertices: " + untouched.numVertices)
       var delta = maximumDegree(untouched)
       while(delta > 1){
         println("Round: " + rounds)
@@ -104,7 +105,6 @@ object maximal{
         // #####################################################################
         // ISSUE: subgraph doesn't filter out edges AND vertices
         // #####################################################################
-        println("\t# of untouched vertices: " + untouched.numVertices)
         println("\t# of untouched edges: " + untouched.numEdges)
         rounds += 1
         println("\tDelta: " + delta)
@@ -204,8 +204,6 @@ object maximal{
     val file = args(0)
     // Get file name for output
     val saveName = "./exports/"+file.split("/").last.replace(".csv", "_output.csv")
-    // !!! TESTING !!!
-    // val file = "/Users/ilanvalencius/Documents/PhD-courses/2-Large-Scale-Data-Processing/csci3390-final-project/data/log_normal_100.csv"
     val edges = sc.textFile(file).map(line => {val x = line.split(","); Edge(x(0).toLong, x(1).toLong , 1)} )
     val g = Graph.fromEdges[Int, Int](edges, 0, edgeStorageLevel = StorageLevel.MEMORY_AND_DISK, vertexStorageLevel = StorageLevel.MEMORY_AND_DISK)
     println("Starting to find the maximal matching")
