@@ -217,6 +217,9 @@ object maximal{
     println("=====================================")
 
     val g2df = spark.createDataFrame(g2.edges)
-    g2df.coalesce(1).write.format("csv").mode("overwrite").save(saveName)
+    val selectedDF = g2df.drop(g2df.columns(2))
+
+    // Write the DataFrame to CSV
+    selectedDF.coalesce(1).write.format("csv").mode("overwrite").save(saveName)
     }
 }
