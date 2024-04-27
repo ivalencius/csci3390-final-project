@@ -55,8 +55,8 @@ For the final project, you are provided 6 CSV files, each containing an undirect
 | twitter_original_edges.csv    | 63555749                     | :x: |
 | soc-LiveJournal1.csv          | 42851237                     | :x: |
 | soc-pokec-relationships.csv   | 22301964                     | :x: |
-| musae_ENGB_edges.csv          | 35324                        | :x: |
-| log_normal_100.csv            | 2671                         | :x: |
+| musae_ENGB_edges.csv          | 35324                        | 2235 |
+| log_normal_100.csv            | 2671                         | 49 |
 
 Your goal is to compute a matching as large as possible for each graph. 
 
