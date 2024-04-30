@@ -62,7 +62,13 @@ For the final project, you are provided 6 CSV files, each containing an undirect
 Your goal is to compute a matching as large as possible for each graph. 
 
 ### Estimates of computation time
-TODO
+The computation time was the following:
+log_normal_100: 18s
+musae_ENGB_edges: 34s
+soc-pokec-relationships: 47612s
+soc-LiveJournal1: 58564s
+twitter_original_edges: ~ 4 hours (time improvement due to changing from GCP to BC cluster)
+com-orkut.ungraph: ~ 8 hours
 
 ### Approach
 TODO
