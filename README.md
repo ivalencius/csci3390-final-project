@@ -49,14 +49,14 @@ Behnezhad, S., Hajiaghayi, M. T., & Harris, D. G. (2019, November). Exponentiall
 ## Graph matching
 For the final project, you are provided 6 CSV files, each containing an undirected graph, which can be found [here](https://drive.google.com/file/d/1khb-PXodUl82htpyWLMGGNrx-IzC55w8/view?usp=sharing). The files are as follows:  
 
-|           File name           |        Number of edges       | Size of Matching [edges] |
-| :---------------------------: | :--------------------------: | :----------------------: |
-| com-orkut.ungraph.csv         | 117185083                    | :x: |
-| twitter_original_edges.csv    | 63555749                     | :x: |
-| soc-LiveJournal1.csv          | 42851237                     | :x: |
-| soc-pokec-relationships.csv   | 22301964                     | :x: |
-| musae_ENGB_edges.csv          | 35324                        | :x: |
-| log_normal_100.csv            | 2671                         | :x: |
+|          File name          | Number of edges | Size of Matching [edges] | Top result to aim for |
+| :-------------------------: | :-------------: | :----------------------: | :-------------------: |
+|    com-orkut.ungraph.csv    |    117185083    |           :x:            |      140878 (?)       |
+| twitter_original_edges.csv  |    63555749     |           :x:            |         94074         |
+|    soc-LiveJournal1.csv     |    42851237     |           :x:            |        1780692        |
+| soc-pokec-relationships.csv |    22301964     |           :x:            |        664398         |
+|    musae_ENGB_edges.csv     |      35324      |           :x:            |         2887          |
+|     log_normal_100.csv      |      2671       |           :x:            |          50           |
 
 Your goal is to compute a matching as large as possible for each graph. 
 
