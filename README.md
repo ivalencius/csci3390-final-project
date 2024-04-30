@@ -71,10 +71,10 @@ twitter_original_edges: ~ 4 hours (time improvement due to changing from GCP to 
 com-orkut.ungraph: ~ 8 hours
 
 ### Approach
-TODO
+The general approach of this algorithm is to perform a greedy algorithm on subgraphs which get successively smaller. The paper proves that given the correct parameters of $p$ and $k$, the algorithm can run in $O(n)$ space using $O(\log \log \Delta)$ rounds. Given that we did not implement algorithm 2 which _ensures_ the maximum degree decreases on each run, we are left with a slightly worse algorithm that runs in $O(\log n)$ rounds.
 
 ### Advantages
-TODO
+The primary advantage of this algorithm is that it performs very well on the massively parallel computation model. The full benefits of this algorithm are not realized for our testing as we do not have access to a large number of machines. The algorithm should run each subgraph on a separate machine and thus can run extremely fast as running `GreedyMM` is very fast on one machine. Given that we are not using multiple machines this benefit goes unrealized which leads to long run-times.
 
 ### Input format
 Each input file consists of multiple lines, where each line contains 2 numbers that denote an undirected edge. For example, the input below is a graph with 3 edges.  
