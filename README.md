@@ -49,14 +49,14 @@ Behnezhad, S., Hajiaghayi, M. T., & Harris, D. G. (2019, November). Exponentiall
 ## Graph matching
 For the final project, you are provided 6 CSV files, each containing an undirected graph, which can be found [here](https://drive.google.com/file/d/1khb-PXodUl82htpyWLMGGNrx-IzC55w8/view?usp=sharing). The files are as follows:  
 
-|          File name          | Number of edges | Size of Matching [edges] | Top result to aim for |
-| :-------------------------: | :-------------: | :----------------------: | :-------------------: |
-|    com-orkut.ungraph.csv    |    117185083    |           :x:            |        1408728        |
-| twitter_original_edges.csv  |    63555749     |           :x:            |         94074         |
-|    soc-LiveJournal1.csv     |    42851237     |        1,544,555         |       1,780,692       |
-| soc-pokec-relationships.csv |    22301964     |         587,924          |        664,398        |
-|    musae_ENGB_edges.csv     |      35324      |          2,236           |         2,887         |
-|     log_normal_100.csv      |      2671       |            49            |          50           |
+|          File name          | Number of edges | Size of Matching [edges] | Top result to aim for | Rounds |
+| :-------------------------: | :-------------: | :----------------------: | :-------------------: | 43 |
+|    com-orkut.ungraph.csv    |    117185083    |          1,325,427            |        1,408,728        | |
+| twitter_original_edges.csv  |    63555749     |           :x:            |         94,074         | |
+|    soc-LiveJournal1.csv     |    42851237     |        1,544,555        |       1,780,692       | 38 |
+| soc-pokec-relationships.csv |    22301964     |         587,924          |        664,398        | |
+|    musae_ENGB_edges.csv     |      35324      |          2,236           |         2,887         | |
+|     log_normal_100.csv      |      2671       |            49            |          50           | 8 |
 
 
 Your goal is to compute a matching as large as possible for each graph. 
