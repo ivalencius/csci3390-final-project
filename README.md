@@ -63,12 +63,12 @@ Your goal is to compute a matching as large as possible for each graph.
 
 ### Estimates of computation time
 The computation time was the following:
-log_normal_100: 18s
-musae_ENGB_edges: 34s
-soc-pokec-relationships: 47612s
-soc-LiveJournal1: 58564s
-twitter_original_edges: ~ 4 hours (time improvement due to changing from GCP to BC cluster)
-com-orkut.ungraph: ~ 8 hours
+log_normal_100: 18s <br />
+musae_ENGB_edges: 34s <br />
+soc-pokec-relationships: 47612s <br />
+soc-LiveJournal1: 58564s <br />
+twitter_original_edges: ~ 4 hours (time improvement due to changing from GCP to BC cluster) <br />
+com-orkut.ungraph: ~ 8 hours <br />
 
 ### Approach
 TODO
