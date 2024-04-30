@@ -62,13 +62,13 @@ For the final project, you are provided 6 CSV files, each containing an undirect
 Your goal is to compute a matching as large as possible for each graph. 
 
 ### Estimates of computation time
-The computation time was the following:
-log_normal_100: 18s
-musae_ENGB_edges: 34s
-soc-pokec-relationships: 47612s
-soc-LiveJournal1: 58564s
-twitter_original_edges: ~ 4 hours (time improvement due to changing from GCP to BC cluster)
-com-orkut.ungraph: ~ 8 hours
+<b>The computation time was the following: </b> <br />
+log_normal_100: 18s <br />
+musae_ENGB_edges: 34s <br />
+soc-pokec-relationships: 47612s <br />
+soc-LiveJournal1: 58564s <br />
+twitter_original_edges: ~ 4 hours (time improvement due to changing from GCP to BC cluster) <br />
+com-orkut.ungraph: ~ 8 hours <br />
 
 ### Approach
 The general approach of this algorithm is to perform a greedy algorithm on subgraphs which get successively smaller. The paper proves that given the correct parameters of $p$ and $k$, the algorithm can run in $O(n)$ space using $O(\log \log \Delta)$ rounds. Given that we did not implement algorithm 2 which _ensures_ the maximum degree decreases on each run, we are left with a slightly worse algorithm that runs in $O(\log n)$ rounds.
