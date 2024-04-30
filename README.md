@@ -51,12 +51,12 @@ For the final project, you are provided 6 CSV files, each containing an undirect
 
 |          File name          | Number of edges | Size of Matching [edges] | Top result to aim for |
 | :-------------------------: | :-------------: | :----------------------: | :-------------------: |
-|    com-orkut.ungraph.csv    |    117185083    |           :x:            |      140878 (?)       |
+|    com-orkut.ungraph.csv    |    117185083    |           :x:            |        1408728        |
 | twitter_original_edges.csv  |    63555749     |           :x:            |         94074         |
-|    soc-LiveJournal1.csv     |    42851237     |           1544555            |        1780692        |
-| soc-pokec-relationships.csv |    22301964     |           587924            |        664398         |
-|    musae_ENGB_edges.csv     |      35324      |           2236            |         2887          |
-|     log_normal_100.csv      |      2671       |           49            |          50           |
+|    soc-LiveJournal1.csv     |    42851237     |        1,544,555         |       1,780,692       |
+| soc-pokec-relationships.csv |    22301964     |         587,924          |        664,398        |
+|    musae_ENGB_edges.csv     |      35324      |          2,236           |         2,887         |
+|     log_normal_100.csv      |      2671       |            49            |          50           |
 
 
 Your goal is to compute a matching as large as possible for each graph. 
