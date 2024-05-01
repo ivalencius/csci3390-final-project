@@ -50,13 +50,13 @@ Behnezhad, S., Hajiaghayi, M. T., & Harris, D. G. (2019, November). Exponentiall
 For the final project, you are provided 6 CSV files, each containing an undirected graph, which can be found [here](https://drive.google.com/file/d/1khb-PXodUl82htpyWLMGGNrx-IzC55w8/view?usp=sharing). The files are as follows:  
 
 |          File name          | Number of edges | Size of Matching [edges] | Top result to aim for | Rounds |
-| :-------------------------: | :-------------: | :----------------------: | :-------------------: | :-------------------: |
-|    com-orkut.ungraph.csv    |    117185083    |          1,325,427       |        1,408,728        | 43 |
-| twitter_original_edges.csv  |    63555749     |           :x:            |         94,074         | ? |
-|    soc-LiveJournal1.csv     |    42851237     |        1,544,555        |       1,780,692       | 38 |
-| soc-pokec-relationships.csv |    22301964     |         587,924          |        664,398        | 26 |
-|    musae_ENGB_edges.csv     |      35324      |          2,236           |         2,887         | 14|
-|     log_normal_100.csv      |      2671       |            49            |          50           | 8 |
+| :-------------------------: | :-------------: | :----------------------: | :-------------------: | :----: |
+|    com-orkut.ungraph.csv    |    117185083    |        1,325,427         |       1,408,728       |   43   |
+| twitter_original_edges.csv  |    63555749     |          91,735          |        94,074         |  157   |
+|    soc-LiveJournal1.csv     |    42851237     |        1,544,555         |       1,780,692       |   38   |
+| soc-pokec-relationships.csv |    22301964     |         587,924          |        664,398        |   26   |
+|    musae_ENGB_edges.csv     |      35324      |          2,236           |         2,887         |   14   |
+|     log_normal_100.csv      |      2671       |            49            |          50           |   8    |
 
 
 Your goal is to compute a matching as large as possible for each graph. 
@@ -71,7 +71,7 @@ twitter_original_edges: ~ 4 hours (time improvement due to changing from GCP to 
 com-orkut.ungraph: ~ 8 hours <br />
 
 ### Approach
-The general approach of this algorithm is to perform a greedy algorithm on subgraphs which get successively smaller. The paper proves that given the correct parameters of $p$ and $k$, the algorithm can run in $O(n)$ space using $O(\log \log \Delta)$ rounds. Given that we did not implement algorithm 2 which _ensures_ the maximum degree decreases on each run, we are left with a slightly worse algorithm that runs in $O(\log n)$ rounds.
+The general approach of this algorithm is to perform a greedy algorithm on subgraphs which get successively smaller. The paper proves that given the correct parameters of $p$ and $k$, the algorithm can run in $O(n)$ space using $O(\log \log \Delta)$ rounds. Given that we did not implement algorithm 2 which _ensures_ the maximum degree decreases on each run, we are left with a slightly worse algorithm that runs in $O(\log n)$ rounds. This becomes a noticeable issue for the twitter graph where the maximum degree does not decrease quickly due to a large number of nodes with very high degrees.
 
 ### Advantages
 The primary advantage of this algorithm is that it performs very well on the massively parallel computation model. The full benefits of this algorithm are not realized for our testing as we do not have access to a large number of machines. The algorithm should run each subgraph on a separate machine and thus can run extremely fast as running `GreedyMM` is very fast on one machine. Given that we are not using multiple machines this benefit goes unrealized which leads to long run-times.
