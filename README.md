@@ -4,7 +4,7 @@ Authors:
 - Steven Roche (sroche14)
 - Jason Adhinarta (jasonkena)
 
-Compressed csvs for the matchings are in `exports/`.
+Compressed csvs for the matchings are in `exports/` (tarball also provided).
 
 ---
 __Algorithm 1__:  Maximal Matching
