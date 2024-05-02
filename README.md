@@ -4,7 +4,7 @@ Authors:
 - Steven Roche (sroche14)
 - Jason Adhinarta (jasonkena)
 
-Compressed csvs for the matchings are in `exports/` (tarball also provided). We chose to implement the "Exponentially faster massively parallel maximal matching" paper so we could learn about a state-of-the-art method. We also recognize that given our limited number of available machines, that the run time for each test case is longer than other methods. However, we believe the sacrifice in time was worth the gains in knowledge and improvements in the matchings.
+Compressed csvs for the matchings are in `exports/` (tarball also provided). We chose to implement the "Exponentially faster massively parallel maximal matching" paper so we could learn about a state-of-the-art method. We also recognize that, given our limited number of available machines, the run time for each test case is longer than other existing methods. However, we believe the sacrifice in runtime was worth the gains in improvements in the quality of our matchings and our increased knowledge from the paper.
 
 ---
 __Algorithm 1__:  Maximal Matching
