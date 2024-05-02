@@ -75,34 +75,3 @@ The general approach of this algorithm is to perform a greedy algorithm on subgr
 
 ### Advantages
 The primary advantage of this algorithm is that it performs very well on the massively parallel computation model. The full benefits of this algorithm are not realized for our testing as we do not have access to a large number of machines. The algorithm should run each subgraph on a separate machine and thus can run extremely fast as running `GreedyMM` is very fast on one machine. Given that we are not using multiple machines this benefit goes unrealized which leads to long run-times.
-
-### Input format
-Each input file consists of multiple lines, where each line contains 2 numbers that denote an undirected edge. For example, the input below is a graph with 3 edges.  
-1,2  
-3,2  
-3,4  
-
-### Output format
-Your output should be a CSV file listing all of the matched edges, 1 on each line. For example, the ouput below is a 2-edge matching of the above input graph. Note that `3,4` and `4,3` are the same since the graph is undirected.  
-1,2  
-4,3  
-
-## Grading policy
-* Quality of matchings (40%)
-  * For each test case, you'll receive at least 70% of full credit if your matching size is at least half of the best answer in the class.
-  * **You will receive a 0 for any case where the verifier does not confirm that your output is a matching.** Please do not upload any output files that do not pass the verifier.
-* Project report (35%)
-  * Your report grade will be evaluated using the following criteria:
-    * Discussion of the merits of your algorithms such as the theoretical merits (i.e. if you can show your algorithm has certain guarantee).
-    * Depth of technicality
-    * Novelty
-    * Completeness
-    * Readability
-* Presentation (15%)
-* Formatting (10%)
-  * If the format of your submission does not adhere to the instructions (e.g. output file naming conventions), points will be deducted in this category.
-
-## You must do the following to receive full credit:
-1. Create your report in the ``README.md`` and push it to your repo.
-2. In the report, you must include your (and any partner's) full name in addition to any collaborators.
-3. Submit a link to your repo in the Canvas assignment.
